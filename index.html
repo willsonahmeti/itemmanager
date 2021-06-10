@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Item Manager</title>
+    <link rel="stylesheet" href="https://bootswatch.com/5/simplex/bootstrap.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="#">Item Manager</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+                <ul class="navbar-nav me-auto mb-2 mb-md-0">
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="/">Home</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Add Item</h1>
+
+        <form id="itemForm">
+            <div class="form-group">
+                <label class="mt-3">Text</label>
+                <input type="text" id="text" class="form-control mt-3">
+            </div>
+            <div class="form-group">
+                <label class="mt-3">Body</label>
+                <textarea id="body" class="form-control mt-3"></textarea>
+            </div>
+
+            <input type="submit" value="Submit" class="btn btn-dark mt-3">
+        </form>
+
+        <hr>
+
+        <ul id="items" class="list-group"></ul>
+    </div>
+
+
+
+<script src="https://code.jquery.com/jquery-1.12.4.js"
+        integrity="sha256-Qw82+bXyGq6MydymqBxNPYTaUXXq7c8v3CwiYwLLNXU="
+        crossorigin="anonymous"></script>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        getItems();
+
+        //Submit event
+
+        $('#itemForm').on('submit', function(e) {
+            e.preventDefault();
+
+            let text = $('#text').val();
+            let body = $('#body').val();
+
+            addItem(text, body);
+        });
+
+        // Delete event
+
+        $('body').on('click', '.deleteLink', function (e) {
+            e.preventDefault();
+
+            let id = $(this).data('id');
+            deleteItem(id);
+        });
+
+        // Delete item though api
+
+        function deleteItem(id) {
+            $.ajax({
+                method : 'POST',
+                url : 'http://itemapi.test/api/items/'+id,
+                data : {_method: 'DELETE'}
+            }).done(function(item) {
+                alert('Item removed');
+                location.reload();
+            });
+        }
+
+        // insert item through api
+
+        function addItem(text, body) {
+            $.ajax({
+                method : 'POST',
+                url : 'http://itemapi.test/api/items',
+                data : {text: text, body: body}
+            }).done(function(item) {
+                alert('Item #'+item.id+' added');
+                location.reload();
+            });
+        }
+
+        // Get items from API
+        function getItems() {
+            $.ajax({
+                url : 'http://itemapi.test/api/items',
+
+            }).done(function (items) {
+                let output = '';
+                $.each(items, function (key, item) {
+                    output += `
+                        <li class="list-group-item">
+                            <strong>${item.text}: </strong>${item.body} <a href="#" class="deleteLink" data-id="${item.id}">Delete</a>
+                        </li>
+                    `;
+                });
+                $('#items').append(output);
+            });
+        }
+    });
+</script>
+</body>
+</html>
